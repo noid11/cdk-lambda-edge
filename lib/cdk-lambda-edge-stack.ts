@@ -37,9 +37,16 @@ export class CdkLambdaEdgeStack extends cdk.Stack {
 
     lambdaEdgeIamRole.attachInlinePolicy(assumePolicy);
 
-    const viewerRequestFunction = new lambda.Function(this, 'HelloHandler', {
+    const viewerRequestFunction = new lambda.Function(this, 'viewerRequestHandler', {
       runtime: lambda.Runtime.NODEJS_12_X,
       code: lambda.Code.fromAsset('lambda/viewer-request'),
+      handler: 'main.handler',
+      role: lambdaEdgeIamRole
+    });
+
+    const originRequestFunction = new lambda.Function(this, 'originRequestHandler', {
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.fromAsset('lambda/origin-request'),
       handler: 'main.handler',
       role: lambdaEdgeIamRole
     });
@@ -51,6 +58,10 @@ export class CdkLambdaEdgeStack extends cdk.Stack {
           {
             functionVersion: viewerRequestFunction.currentVersion,
             eventType: cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
+          },
+          {
+            functionVersion: originRequestFunction.currentVersion,
+            eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
           }
         ]
       }
