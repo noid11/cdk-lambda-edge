@@ -51,6 +51,13 @@ export class CdkLambdaEdgeStack extends cdk.Stack {
       role: lambdaEdgeIamRole
     });
 
+    const viewerResponseFunction = new lambda.Function(this, 'viewerResponseHandler', {
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.fromAsset('lambda/viewer-response'),
+      handler: 'main.handler',
+      role: lambdaEdgeIamRole
+    });
+
     const dist = new cloudfront.Distribution(this, 'myDist', {
       defaultBehavior: {
         origin: new origins.HttpOrigin('www.example.com'),
@@ -62,6 +69,10 @@ export class CdkLambdaEdgeStack extends cdk.Stack {
           {
             functionVersion: originRequestFunction.currentVersion,
             eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+          },
+          {
+            functionVersion: viewerResponseFunction.currentVersion,
+            eventType: cloudfront.LambdaEdgeEventType.VIEWER_RESPONSE,
           }
         ]
       }
